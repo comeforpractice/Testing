@@ -1,0 +1,110 @@
+<div [@routerTransition]>
+
+    <div class="row">
+        <div class="col-md-6">
+            <h3 class="text-muted">
+                <strong>Campaign</strong>
+            </h3>
+        </div>
+        <div class="col-md-6" *ngIf="campaignFormMode == false">
+            <div class="pull-right">
+                <a class="btn btn-primary" href="javascript:void(0)" (click)="remove()">
+                    <i class="fa fa-trash"></i>
+                </a>
+                <a class="btn btn-secondary" href="javascript:void(0)" (click)="fetch()">
+                    <i class="fa fa-refresh" aria-hidden="true"></i>
+                </a>
+                <a class="btn btn-secondary" href="javascript:void(0)" (click)="doAddCampaign()">
+                    <i class="fa fa-plus-square" aria-hidden="true"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    <hr>
+    <div class="row" *ngIf="campaignFormMode == false">
+        <div class="col-md-12">
+            <ngx-datatable class="bootstrap" [rows]="rows" [columnMode]="'force'" [headerHeight]="50" [footerHeight]="50" [rowHeight]="'auto'"
+                [limit]="10" [selected]="selected" [selectionType]="'checkbox'" [selectAllRowsOnPage]="false" [displayCheck]="displayCheck"
+                (select)='onSelect($event)'>
+                <ngx-datatable-column [width]="30" [sortable]="false" [canAutoResize]="false" [draggable]="false" [resizeable]="false" [headerCheckboxable]="true"
+                    [checkboxable]="true">
+                </ngx-datatable-column>
+                <ngx-datatable-column name="Campaign" prop="name"></ngx-datatable-column>
+                <ngx-datatable-column name="Created" sortable="true" prop="createdAt">
+                    <ng-template let-row="row" let-value="value" ngx-datatable-cell-template>
+                        {{value | date : 'dd/MM/yyyy'}}
+                    </ng-template>
+                </ngx-datatable-column>
+                <ngx-datatable-column name="Updated" sortable="true" prop="updatedAt">
+                    <ng-template let-row="row" let-value="value" ngx-datatable-cell-template>
+                        {{value | date : 'dd/MM/yyyy'}}
+                    </ng-template>
+                </ngx-datatable-column>
+                <ngx-datatable-column name="Effective Date" sortable="true" prop="effectiveDate.iso">
+                    <ng-template let-row="row" let-value="value" ngx-datatable-cell-template>
+                        {{value | date : 'dd/MM/yyyy'}}
+                    </ng-template>
+                </ngx-datatable-column>
+                <ngx-datatable-column name="Termination Date" sortable="true" prop="terminationDate.iso">
+                    <ng-template let-row="row" let-value="value" ngx-datatable-cell-template>
+                        {{value | date : 'dd/MM/yyyy'}}
+                    </ng-template>
+                </ngx-datatable-column>
+                <ngx-datatable-column [width]="30" name="" sortable="false" prop="objectId">
+                    <ng-template let-row="row" let-value="value" ngx-datatable-cell-template>
+                        <a href="javascript:void(0)" (click)="editCampaign(value)">
+                            <i class="fa fa-pencil-square-o"></i>
+                        </a>
+                        <a href="javascript:void(0)" (click)="viewCampaignFiles(value)">
+                            <i class="fa fa-files-o"></i>
+                        </a>
+                    </ng-template>
+                </ngx-datatable-column>
+            </ngx-datatable>
+        </div>
+    </div>
+    <div class="row" *ngIf="campaignFormMode == true">
+        <div class="col-md-12">
+            <form [formGroup]="campaignForm" (ngSubmit)="onCampaignFormSubmit(campaignForm)" [ngClass]="{'was-validated': campaignForm.invalid}">
+                <div class="form-group row" [ngClass]="{
+                                'is-invalid': campaignName.invalid && (campaignName.dirty || campaignName.touched),
+                                'is-valid': campaignName.valid && (campaignName.dirty || campaignName.touched)}">
+                    <label class="col-2 col-form-label">Name:</label>
+                    <div class="col-10">
+                        <input type="text" class="form-control" formControlName="campaignName" required>
+                        <div class="invalid-feedback" *ngIf="campaignName.errors && (campaignName.dirty || campaignName.touched)">
+                            <p *ngIf="campaignName.errors.required">Campaign Name is required</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group row" >
+                    <label class="col-2 col-form-label">Effective Date:</label>
+                    <div class="col-10">
+                        <input type="Date" placeholder="yyyy-mm-dd" class="form-control" formControlName="effectiveDate" >
+                    </div>
+                    
+                </div>
+                <div class="form-group row" >
+                    <label class="col-2 col-form-label">Termination Date:</label>
+                    <div class="col-10">
+                        <input type="Date" placeholder="yyyy-mm-dd" class="form-control" formControlName="terminationDate" >
+                    </div>
+                    
+                </div>
+                <div class="form-group row">
+                    <div class="offset-md-2 col-10">
+                        <dual-list [sort]="keepSorted" [source]="source" [key]="key" [display]="display" [filter]="filter" [(destination)]="confirmed"
+                            height="265px" [format]="format" [disabled]="disabled"></dual-list>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <div class="offset-md-2 col-10">
+                        <button class="btn btn-primary" type="submit">Save</button>
+                        <button class="btn btn-default" type="button" (click)="cancel()">Cancel</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</div>

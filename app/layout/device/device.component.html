@@ -1,0 +1,209 @@
+<div [@routerTransition]>
+    <app-page-header [heading]="'Device'" [icon]="'fa fa-picture-o'"></app-page-header>
+
+    <div class="row"  *ngIf="deviceFormMode == false">
+        
+        <div class="col-md-12">
+        <button class="btn btn-default" type="button" (click)="pushDevice()">Push</button>
+        
+            <div class="pull-right">
+                <a class="btn btn-primary" href="javascript:void(0)" (click)="remove()">
+                    <i class="fa fa-trash"></i>
+                </a>
+                <a class="btn btn-secondary" href="javascript:void(0)" (click)="fetch()">
+                    <i class="fa fa-refresh" aria-hidden="true"></i>
+                </a>
+                <a class="btn btn-secondary" href="javascript:void(0)" (click)="addOrModifyDeviceFile('',false)">
+                    <i class="fa fa-plus-square" aria-hidden="true"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    <hr>
+    <div class="row" *ngIf="deviceFormMode == false">
+        <div class="col-md-12">
+            <ngx-datatable class="bootstrap" [rows]="rows" [columnMode]="'force'" [headerHeight]="50" [footerHeight]="50" [rowHeight]="'auto'"
+                [limit]="10" [selected]="selected" [selectionType]="'checkbox'" [selectAllRowsOnPage]="false" [displayCheck]="displayCheck"
+                (select)='onSelect($event)'>
+                <ngx-datatable-column [width]="30" [sortable]="false" [canAutoResize]="false" [draggable]="false" [resizeable]="false" [headerCheckboxable]="true"
+                    [checkboxable]="true">
+                </ngx-datatable-column>
+                <ngx-datatable-column name="Serial No." prop="serialNo"></ngx-datatable-column>
+                <ngx-datatable-column name="Vehicle No" prop="vehicleNo"></ngx-datatable-column>
+                <ngx-datatable-column name="Phone" prop="phone"></ngx-datatable-column>
+                <ngx-datatable-column name="Email" prop="email"></ngx-datatable-column>
+                <ngx-datatable-column name="Camp Updated Time" sortable="false" prop="lastCampUpdateTime.iso">
+                    <ng-template let-row="row" let-value="value" ngx-datatable-cell-template>
+                        {{value | date : 'dd/MM/yyyy'}}
+                    </ng-template>
+                </ngx-datatable-column>
+                <ngx-datatable-column name="Installed Date" sortable="false" prop="installedDate.iso">
+                    <ng-template let-row="row" let-value="value" ngx-datatable-cell-template>
+                        {{value | date : 'dd/MM/yyyy'}}
+                    </ng-template>
+                </ngx-datatable-column>
+                <ngx-datatable-column name="Replaced Date" sortable="false" prop="replacedDate.iso">
+                    <ng-template let-row="row" let-value="value" ngx-datatable-cell-template>
+                        {{value | date : 'dd/MM/yyyy'}}
+                    </ng-template>
+                </ngx-datatable-column>
+                <ngx-datatable-column [width]="30" name="" sortable="false" prop="objectId">
+                    <ng-template let-row="row" let-value="value" ngx-datatable-cell-template>
+                        <a href="javascript:void(0)" [ngbPopover]="popContent" placement="left" (click)="showMoreDetails(row)" triggers="click:blur">
+                            <i class="fa fa-ellipsis-h" aria-hidden="true"></i>
+                        </a>
+                    </ng-template>
+                </ngx-datatable-column>
+                <ngx-datatable-column [width]="30" name="" sortable="false" prop="objectId">
+                    <ng-template let-row="row" let-value="value" ngx-datatable-cell-template>
+                        <a href="javascript:void(0)" (click)="addOrModifyDeviceFile(value, true)">
+                            <i class="fa fa-pencil-square-o"></i>
+                        </a>
+                    </ng-template>
+                </ngx-datatable-column>
+            </ngx-datatable>
+        </div>
+    </div>
+    <div class="row" *ngIf="deviceFormMode == true">
+        <div class="col-md-12">
+            <form [formGroup]="validateForm" (ngSubmit)="onSubmitCampFileForm(validateForm)" [ngClass]="{'was-validated': validateForm.invalid}">
+                <div class="form-group row" [ngClass]="{
+                                'is-invalid': serialNo.invalid && (serialNo.dirty || serialNo.touched),
+                                'is-valid': serialNo.valid && (serialNo.dirty || serialNo.touched)}">
+                    <label class="col-2 col-form-label">Serial No.:</label>
+                    <div class="col-10">
+                        <input type="text" class="form-control" formControlName="serialNo" required>
+                        <div class="invalid-feedback" *ngIf="serialNo.errors && (serialNo.dirty || serialNo.touched)">
+                            <p *ngIf="serialNo.errors.required">Serial No. field is required</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <label class="col-2 col-form-label">Campaign:</label>
+                    <div class="col-10">
+                        <input type="text" class="form-control" formControlName="campaignId" [ngbTypeahead]="campSearch" 
+                            [inputFormatter]="formatter" [resultTemplate]="campTH" >
+                        
+                    </div>
+                </div>
+                <div class="form-group row" >
+                    <label class="col-2 col-form-label">Vehicle No.:</label>
+                    <div class="col-10">
+                        <input type="text" class="form-control" formControlName="vehicleNo" >
+                        
+                    </div>
+                </div>
+                <div class="form-group row" >
+                    <label class="col-2 col-form-label">Email:</label>
+                    <div class="col-10">
+                        <input type="text" class="form-control" formControlName="email" >
+                        
+                    </div>
+                </div>
+                <div class="form-group row" >
+                    <label class="col-2 col-form-label">Phone:</label>
+                    <div class="col-10">
+                        <input type="text" class="form-control" formControlName="phone" >
+                        
+                    </div>
+                </div>
+                <div class="form-group row" >
+                    <label class="col-2 col-form-label">Station:</label>
+                    <div class="col-10">
+                        <input type="text" class="form-control" formControlName="stationID" [ngbTypeahead]="stateSearch" 
+                            [inputFormatter]="formatter" [resultTemplate]="statTH"
+                            >
+                      
+                    </div>
+                </div>
+
+                <div class="form-group row" >
+                    <label class="col-2 col-form-label">Accessories:</label>
+                    <div class="col-10">
+                        <input type="text" class="form-control" formControlName="accessories" >
+                        
+                    </div>
+                </div>
+                <div class="form-group row" >
+                    <label class="col-2 col-form-label">Driver Name:</label>
+                    <div class="col-10">
+                        <input type="text" class="form-control" formControlName="driverName" >
+                        
+                    </div>
+                </div>
+                <div class="form-group row" >
+                    <label class="col-2 col-form-label">Repaired Date :</label>
+                    <div class="col-10">
+                        <input type="Date" class="form-control" formControlName="repairedDate" >
+                       
+                    </div>
+                </div>
+                <div class="form-group row" [ngClass]="{
+                                'is-invalid': replacedDate.invalid && (replacedDate.dirty || replacedDate.touched),
+                                'is-valid': replacedDate.valid && (replacedDate.dirty || replacedDate.touched)}">
+                    <label class="col-2 col-form-label">Replaced Date :</label>
+                    <div class="col-10">
+                        <input type="Date" class="form-control" formControlName="replacedDate" >
+                        <div class="invalid-feedback" *ngIf="replacedDate.errors && (replacedDate.dirty || replacedDate.touched)">
+                            <p *ngIf="replacedDate.errors.required">Replaced date field is required</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group row" [ngClass]="{
+                    'is-invalid': installedDate.invalid && (installedDate.dirty || installedDate.touched),
+                    'is-valid': installedDate.valid && (installedDate.dirty || installedDate.touched)}">
+                    <label class="col-2 col-form-label">Installed Date :</label>
+                    <div class="col-10">
+                        <input type="Date" class="form-control" formControlName="installedDate" >
+                        <div class="invalid-feedback" *ngIf="installedDate.errors && (installedDate.dirty || installedDate.touched)">
+                            <p *ngIf="installedDate.errors.required">Installed date field is required</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <div class="offset-md-2 col-10">
+                        <button class="btn btn-primary" type="submit">Save</button>
+                        <button class="btn btn-default" type="button" (click)="cancel()">Cancel</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <ng-template #popContent>
+        <div class="row">
+            <div class="col-md-6">
+                Campaign Name:
+            </div>
+            <div class="col-md-6">
+                {{selectedDevice.campaignName}}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                Station Name:
+            </div>
+            <div class="col-md-6">
+                {{selectedDevice.stationName}}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                Serial No.:
+            </div>
+            <div class="col-md-6">
+                {{selectedDevice.serialNo}}
+            </div>
+        </div>
+    </ng-template>
+
+    <ng-template #campTH let-r="result" let-t="term">
+        {{ r.name}}
+    </ng-template>
+
+    <ng-template #statTH let-r="result" let-t="term">
+        {{ r.name}}
+    </ng-template>
+</div>

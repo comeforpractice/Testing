@@ -1,0 +1,100 @@
+<div [@routerTransition]>
+    <h2 class="text-muted">
+        <strong>Campaign</strong>
+    </h2>
+    <hr>
+    <div class="row" *ngIf="campaignFormMode == false">
+        <div class="col-md-12">
+            <div class="pull-right">
+                <button class="btn btn-primary" type="button" (click)="remove()">
+                    <i class="fa fa-trash"></i>
+                </button>
+                <button class="btn btn-secondary" type="button" (click)="fetch()">
+                    <i class="fa fa-refresh" aria-hidden="true"></i>
+                </button>
+                <button class="btn btn-secondary" type="button" (click)="doAddCampaign()">
+                    <i class="fa fa-plus-square" aria-hidden="true"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    <hr>
+    <div class="row" *ngIf="campaignFormMode == false">
+        <div class="col-md-12">
+            <ngx-datatable class="bootstrap" [rows]="rows" [columnMode]="'force'" [headerHeight]="50" [footerHeight]="50" [rowHeight]="'auto'"
+                [limit]="5" [selected]="selected" [selectionType]="'checkbox'" [selectAllRowsOnPage]="false" [displayCheck]="displayCheck"
+                (select)='onSelect($event)'>
+                <ngx-datatable-column [width]="30" [sortable]="false" [canAutoResize]="false" [draggable]="false" [resizeable]="false" [headerCheckboxable]="true"
+                    [checkboxable]="true">
+                </ngx-datatable-column>
+                <ngx-datatable-column name="Campaign" prop="name"></ngx-datatable-column>
+                <ngx-datatable-column name="Created" prop="createdAt"></ngx-datatable-column>
+                <ngx-datatable-column name="Updated" prop="updatedAt"></ngx-datatable-column>
+                <ngx-datatable-column name="Effective Date" prop="effectiveDate.iso"></ngx-datatable-column>
+                <ngx-datatable-column name="Termination Date" prop="terminationDate.iso"></ngx-datatable-column>
+                <ngx-datatable-column [width]="30" name="" sortable="false" prop="objectId">
+                    <ng-template let-row="row" let-value="value" ngx-datatable-cell-template>
+                        <a href="javascript:void(0)" (click)="editCampaign(value)">
+                            <i class="fa fa-pencil-square-o"></i>
+                        </a>
+                        <a href="javascript:void(0)" (click)="viewCampaignFiles(value)">
+                            <i class="fa fa-files-o"></i>
+                        </a>
+                    </ng-template>
+                </ngx-datatable-column>
+            </ngx-datatable>
+        </div>
+    </div>
+    <div class="row" *ngIf="campaignFormMode == true">
+        <div class="col-md-12">
+            <form [formGroup]="campaignForm" (ngSubmit)="onCampaignFormSubmit(campaignForm)" [ngClass]="{'was-validated': campaignForm.invalid}">
+                <div class="form-group row" [ngClass]="{
+                                'is-invalid': campaignName.invalid && (campaignName.dirty || campaignName.touched),
+                                'is-valid': campaignName.valid && (campaignName.dirty || campaignName.touched)}">
+                    <label class="col-2 col-form-label">name:</label>
+                    <div class="col-10">
+                        <input type="text" class="form-control" formControlName="campaignName" required>
+                        <div class="invalid-feedback" *ngIf="campaignName.errors && (campaignName.dirty || campaignName.touched)">
+                            <p *ngIf="campaignName.errors.required">Campaign Name is required</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group row" [ngClass]="{
+                    'is-invalid': effectiveDate.invalid && (effectiveDate.dirty || effectiveDate.touched),
+                    'is-valid': effectiveDate.valid && (effectiveDate.dirty || effectiveDate.touched)}">
+                    <label class="col-2 col-form-label">Start Date:</label>
+                    <div class="col-10">
+                        <input type="Date" placeholder="yyyy-mm-dd" class="form-control" formControlName="effectiveDate" required>
+                    </div>
+                    <div class="invalid-feedback" *ngIf="effectiveDate.errors && (effectiveDate.dirty || effectiveDate.touched)">
+                        <p *ngIf="effectiveDate.errors.required">Effective Date is required</p>
+                    </div>
+                </div>
+                <div class="form-group row" [ngClass]="{
+                    'is-invalid': terminationDate.invalid && (terminationDate.dirty || terminationDate.touched),
+                    'is-valid': terminationDate.valid && (terminationDate.dirty || terminationDate.touched)}">
+                    <label class="col-2 col-form-label">End Date:</label>
+                    <div class="col-10">
+                        <input type="Date" placeholder="yyyy-mm-dd" class="form-control" formControlName="terminationDate" required>
+                    </div>
+                    <div class="invalid-feedback" *ngIf="terminationDate.errors && (terminationDate.dirty || terminationDate.touched)">
+                        <p *ngIf="terminationDate.errors.required">Termination Date is required</p>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <div class="offset-md-2 col-10">
+                        <dual-list [sort]="keepSorted" [source]="source" [key]="key" [display]="display" [filter]="filter" [(destination)]="confirmed"
+                            height="265px" [format]="format" [disabled]="disabled"></dual-list>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <div class="offset-md-2 col-10">
+                        <button class="btn btn-primary" type="submit">Save</button>
+                        <button class="btn btn-default" type="button" (click)="cancel()">Cancel</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</div>

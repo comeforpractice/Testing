@@ -1,0 +1,45 @@
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Observable } from 'rxjs/Rx';
+
+import { Station } from '../models/index';
+
+import { configuration, uriConfig, httpOptions } from '../config/config';
+
+@Injectable()
+export class StationService {
+
+    constructor(private http: HttpClient) {   }
+
+    getAll(): Observable<Station[]> {
+        return this.http.get<any>(uriConfig.STATION, { headers: httpOptions.headers })
+            .map(res => {
+                console.log(res);
+                return res.results;
+            });
+    }
+
+    getById(id: string) {
+        return this.http.get(uriConfig.STATION + '/' + id, { headers: httpOptions.headers });
+    }
+
+    create(station: Station) {
+        return this.http.post(uriConfig.STATION, station, { headers: httpOptions.headers });
+    }
+
+    update(station: Station) {
+        return this.http.put(uriConfig.STATION + '/' + station.objectId, station, { headers: httpOptions.headers });
+    }
+
+    delete(id: string) {
+        return this.http.delete(uriConfig.STATION + '/' + id, { headers: httpOptions.headers });
+    }
+    
+    updateRelation(station: Station, stationId: string): Observable<any> {
+        return this.http.put(uriConfig.STATION + '/' + stationId, station, { headers: httpOptions.headers })
+        .map(res => {
+            return res;
+        });
+    }
+
+}

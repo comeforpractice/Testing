@@ -1,0 +1,386 @@
+import { Component, OnInit } from '@angular/core';
+import { routerTransition } from '../../router.animations';
+import { ActivatedRoute, Router } from '@angular/router';
+import { NgbModal, ModalDismissReasons, NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
+import {
+    ReactiveFormsModule,
+    FormsModule, FormBuilder, Validators, FormGroup, FormControl, AbstractControl
+} from '@angular/forms';
+import { DomSanitizer, SafeResourceUrl, BrowserModule } from '@angular/platform-browser';
+import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
+
+import {
+    Ng4FilesService,
+    Ng4FilesConfig,
+    Ng4FilesStatus,
+    Ng4FilesSelected
+} from '../../shared/modules';
+import { CampaignFile, FilePath, DateType } from '../../shared/models/index';
+import { CampaignFileService } from '../../shared/services/campaign-file.service';
+import { configuration, uriConfig, httpOptions, httpOptionsImage } from '../../shared/config/config';
+import { ParseService } from '../../shared/services/parse.service';
+
+export function getDateType(dtType) {
+    if (null == dtType) {
+        dtType = new Date().toUTCString();
+    }
+    if (typeof dtType === 'string') {
+        let dataType: DateType = new DateType();
+        dataType.__type = 'Date';
+        dataType.iso = dtType;
+        return dataType;
+    }
+    return dtType;
+}
+
+export function getDateFromModel(dtType) {
+    let dateType = getDateType(dtType);
+    console.log(dateType);
+    console.log(dtType);
+    if (dateType && null != dateType) {
+        let date = new Date(dateType.iso);
+        return date.getFullYear() + '-' + date.getMonth() + 1 + '-' + date.getDate();        
+    }
+    return null;
+
+}
+
+@Component({
+    selector: 'app-campaign-file',
+    templateUrl: './campaign-file.component.html',
+    styleUrls: ['./campaign-file.component.scss'],
+    animations: [routerTransition()]
+})
+export class CampaignFileComponent implements OnInit {
+
+    rows = [];
+    selected = [];
+
+    campForm: FormGroup;
+    campaignIdCtrl: FormControl;
+    campaignId: any = '';
+    filePath: any;
+    closeResult: any = '';
+    filepathUri: SafeResourceUrl;
+
+    // Campaign File
+    campFileFormMode: any = false;
+    moreFile: any = false;
+
+    eidtCampFileFormMode: any = false;
+    campFileForm: FormGroup;
+
+    fileName: FormControl;
+    fileType: FormControl;
+    priority: FormControl;
+    visibleArea: FormControl;
+    visibilityTime: FormControl;
+    startDate: FormControl;
+    endDate: FormControl;
+
+    campaignFile: CampaignFile;
+
+    public selectedFiles;
+    fileContent: any;
+    private sharedConfig: Ng4FilesConfig = {
+        acceptExtensions: ['jpg', 'png'],
+        maxFilesCount: 1
+    };
+
+    private namedConfig: Ng4FilesConfig = {
+        acceptExtensions: ['mp4', 'jpg', 'png'],
+        maxFilesCount: 1,
+        maxFileSize: 512000,
+        totalFilesSize: 1012000
+    };
+
+    constructor(
+        private modalService: NgbModal,
+        private fb: FormBuilder,
+        public campaignFileService: CampaignFileService,
+        private route: ActivatedRoute,
+        public sanitizer: DomSanitizer,
+        private ng4FilesService: Ng4FilesService,
+        private parseServer: ParseService) {
+        this.route.params.subscribe(params => {
+            const tempCampId = params['campaignId'];
+            this.campaignId = '';
+            if (tempCampId && 'nocampaign' !== tempCampId) {
+                this.campaignId = tempCampId;
+                this.getCampaignFilesByCampaignId();
+            }
+        });
+        this.campaignIdCtrl = new FormControl(this.campaignId, [Validators.required]);
+        this.campForm = fb.group({
+            'campaignId': this.campaignIdCtrl
+        });
+        if (this.campaignId === '') {
+            this.fetch();
+        }
+        this.resetFlags();
+    }
+
+    ngOnInit() {
+        console.log(this.campaignId);
+        this.resetFlags();
+
+        this.createFormControls();
+        this.createForm();
+
+        this.ng4FilesService.addConfig(this.sharedConfig);
+        this.ng4FilesService.addConfig(this.namedConfig, 'another-config');
+    }
+
+    fetch() {
+        this.campaignId = '';
+        this.campaignIdCtrl.reset();
+        this.campaignFileService.getAll().subscribe(data => {
+            this.rows = data;
+            console.log(data);
+            this.resetFlags();
+        }, error => {
+            this.selected = [];
+            this.rows = [];
+            console.log(error);
+            this.resetFlags();
+        });
+    }
+
+    onSubmitCampaign(camp) {
+        this.campaignId = this.campaignIdCtrl.value;
+        this.getCampaignFilesByCampaignId();
+    }
+
+    getCampaignFilesByCampaignId() {
+        console.log(this.campaignId);
+        if (this.campaignId && '' !== this.campaignId) {
+            this.campaignFileService.getByCampaignId(this.campaignId).subscribe(data => {
+                this.rows = data;
+                console.log(data);
+            }, error => {
+                this.selected = [];
+                this.rows = [];
+                console.log(error);
+            });
+        }
+    }
+
+    onSelect({ selected }) {
+        this.selected.splice(0, this.selected.length);
+        this.selected.push(...selected);
+    }
+
+    add() {
+        this.selected.push(this.rows[1], this.rows[3]);
+    }
+
+    update() {
+        this.selected = [this.rows[1], this.rows[3]];
+    }
+
+    remove() {
+        console.log(this.selected);
+        if (this.selected) {
+            this.selected.forEach(row => {
+                this.campaignFileService.delete(row.objectId).subscribe(data => {
+                    console.log(data);
+                }, error => {
+                    console.log(error);
+                });
+            });
+        }
+        setTimeout(() => {
+            this.fetch();
+        }, 3000);
+    }
+
+    displayCheck(row) {
+        return true;
+    }
+
+    previewImg(content, row) {
+        if (row) {
+            row = this.campaignFile;
+        }
+        this.filePath = row.filePath;
+        console.log(this.filePath);
+        this.filepathUri = this.sanitizer.bypassSecurityTrustResourceUrl(this.filePath.url);
+        console.log(this.filepathUri);
+        this.modalService.open(content, { size: 'lg', windowClass: 'modal-xxl' }).result.then((result) => {
+            this.closeResult = `Closed with: ${result}`;
+        }, (reason) => {
+            this.closeResult = `Dismissed ${this.getDismissReason(reason)}`;
+        });
+    }
+
+    private getDismissReason(reason: any): string {
+        this.filePath = null;
+        if (reason === ModalDismissReasons.ESC) {
+            return 'by pressing ESC';
+        } else if (reason === ModalDismissReasons.BACKDROP_CLICK) {
+            return 'by clicking on a backdrop';
+        } else {
+            return `with: ${reason}`;
+        }
+    }
+
+    addOrModifyCampFile() {
+        this.campFileForm = this.fb.group({});
+        this.createFormControls();
+        this.createForm();
+        this.campFileFormMode = true;
+    }
+
+    createFormControls() {
+        this.fileName = new FormControl('', Validators.required);
+        this.fileType = new FormControl('', Validators.required);
+        this.priority = new FormControl('', Validators.required);
+        this.visibilityTime = new FormControl('', Validators.required);
+        this.visibleArea = new FormControl('', Validators.required);
+        this.startDate = new FormControl('', Validators.required);
+        this.endDate = new FormControl('', Validators.required);
+    }
+
+    createForm() {
+        this.campFileForm = new FormGroup({
+            fileName: this.fileName,
+            fileType: this.fileType,
+            priority: this.priority,
+            visibilityTime: this.visibilityTime,
+            visibleArea: this.visibleArea,
+            startDate: this.startDate,
+            endDate: this.endDate
+        });
+    }
+
+    public filesSelect(selectedFiles: Ng4FilesSelected): void {
+        this.selectedFiles = selectedFiles.files;
+    }
+
+    cancel() {
+        this.campFileForm.clearValidators();
+        this.resetFlags();
+    }
+
+    onSubmitCampFileForm(campFileForm) {
+        if (campFileForm.valid) {
+            let campFile = new CampaignFile();
+ 			let createdAt = null;
+            let updatedAt = null;
+            if (this.campaignFile) {
+                campFile = this.campaignFile;
+                createdAt = this.campaignFile.createdAt;
+                updatedAt = getDateType(this.campaignFile.updatedAt);
+            }
+                       campFile.fileName = this.fileName.value;
+            campFile.fileType = Number(this.fileType.value);
+            campFile.priority = Number(this.priority.value);
+            campFile.visibleArea = Number(this.visibleArea.value);
+            campFile.visibilityTime = Number(this.visibilityTime.value);
+
+           // campFile.createdAt = getDateType(this.campaignFile.createdAt);
+            //campFile.updatedAt = getDateType(this.campaignFile.updatedAt);
+
+            let date = this.startDate.value;
+            let dt = new Date(date);
+            console.log('Start Date : ' + dt);
+            let dateType: DateType = new DateType();
+            dateType.__type = 'Date';
+            dateType.iso = dt.toUTCString();
+            campFile.startDate = dateType;
+            let date2 = this.endDate.value;
+            let dt2 = new Date(date2);
+            console.log('End Date : ' + dt2);
+            let dateType2: DateType = new DateType();
+            dateType2.__type = 'Date';
+            dateType2.iso = dt2.toUTCString();
+            campFile.endDate = dateType2;
+
+            if (this.selectedFiles && this.selectedFiles.length > 0) {
+                let file = this.selectedFiles[0];
+                let reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => {
+                    let fileContent = reader.result.split(',')[1];
+                    let parseFile = this.parseServer.uploadFile(file.name, file.type, fileContent);
+                    parseFile.save().then(function () {
+                        let filePath = new FilePath();
+                        filePath.url = parseFile._url;
+                        filePath.__type = 'File';
+                        filePath.name = parseFile._name;
+                        campFile.filePath = filePath;
+                    }, function (error) {
+                        console.log('File saving error : ' + error);
+                    });
+                };
+            }
+            this.selectedFiles = [];
+            console.log(JSON.stringify(campFile));
+            setTimeout(() => {
+                this.campaignFileService.create(campFile).subscribe(data => {
+                    console.log(data);
+                    this.fetch();
+                }, error => {
+                    console.log(error);
+                    this.fetch();
+                });
+            }, 3000);
+        } else {
+            console.log('Not valid form');
+        }
+    }
+
+    editCampaignFile(campFileId) {
+        if (campFileId) {
+            this.campaignFileService.getById(campFileId).subscribe(data => {
+                this.updateFormControls(data);
+            }, error => {
+                this.resetFlags();
+            });
+        }
+    }
+
+    updateFormControls(data) {
+        this.campaignFile = data;
+        console.log(data.createdAt);
+        this.fileName = new FormControl(data.fileName, Validators.required);
+        this.fileType = new FormControl(data.fileType, Validators.required);
+        this.priority = new FormControl(data.priority, Validators.required);
+        this.visibilityTime = new FormControl(data.visibilityTime, Validators.required);
+        this.visibleArea = new FormControl(data.visibleArea, Validators.required);
+        this.campFileFormMode = true;
+        this.eidtCampFileFormMode = false;
+        let editFilePath = data.filePath;
+        if (editFilePath && editFilePath.name) {
+            this.eidtCampFileFormMode = true;
+        }
+        console.log(data.startDate);
+        if (data.startDate) {
+            this.startDate = new FormControl(getDateFromModel(data.startDate), Validators.required);
+        }
+        if (data.endDate) {
+            this.endDate = new FormControl(getDateFromModel(data.endDate), Validators.required);
+        }
+
+        this.createForm();
+    }
+
+    deleteFile() {
+        this.eidtCampFileFormMode = false;
+    }
+
+    resetFlags() {
+        this.campFileFormMode = false;
+        this.eidtCampFileFormMode = false;
+        this.selectedFiles = [];
+        this.filePath = null;
+    }
+    leaveChange(control){
+        var msg = control.value == "3" ? this.moreFile = true: this.moreFile = false;
+    }
+
+    check(value){
+        var msg = value == "3" ? this.moreFile = true: this.moreFile = false;
+    }
+    
+}

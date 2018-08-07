@@ -1,0 +1,119 @@
+<div [@routerTransition]>
+    <app-page-header [heading]="'Stations'" [icon]="'fa fa-fw fa-table'"></app-page-header>
+
+    <div class="row" *ngIf="stationFormMode == false">
+        <div class="col-md-12">
+                <button class="btn btn-default" type="button" (click)="pushDevice()">Push</button>
+            <div class="pull-right">
+                
+                <button class="btn btn-primary" type="button" (click)="remove()">
+                    <i class="fa fa-trash"></i>
+                </button>
+                <button class="btn btn-secondary" type="button" (click)="fetch()">
+                    <i class="fa fa-refresh" aria-hidden="true"></i>
+                </button>
+                <button class="btn btn-secondary" type="button" (click)="doAddStation()">
+                    <i class="fa fa-plus-square" aria-hidden="true"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="row" *ngIf="stationFormMode == false">
+        <div class="col-md-12">
+            <ngx-datatable class="bootstrap" [rows]="rows" [columnMode]="'force'" [headerHeight]="50" [footerHeight]="50" [rowHeight]="'auto'"
+                [limit]="10" [selected]="selected" [selectionType]="'checkbox'" [selectAllRowsOnPage]="false" [displayCheck]="displsayCheck"
+                (activate)="onActivate($event)" (select)='onSelect($event)'>
+                <ngx-datatable-column [width]="5" [sortable]="false" [canAutoResize]="true" [draggable]="false" [resizeable]="false" [headerCheckboxable]="true"
+                    [checkboxable]="true">
+                </ngx-datatable-column>
+                <ngx-datatable-column name="Name" prop="name"></ngx-datatable-column>
+                <ngx-datatable-column name="Campaign ID" prop="campaignID"></ngx-datatable-column>
+                <ngx-datatable-column name="VolThreshoTime" prop="volThresholdTime"></ngx-datatable-column>
+                <ngx-datatable-column name="MinBrightness" prop="minBrightness"></ngx-datatable-column>
+                <ngx-datatable-column name="MaxBrightness" prop="maxBrightness"></ngx-datatable-column>
+                <ngx-datatable-column name="MinVolume" prop="minVolume"></ngx-datatable-column>
+                <ngx-datatable-column name="Updated" sortable="true" prop="updatedAt">
+                    <ng-template let-row="row" let-value="value" ngx-datatable-cell-template>
+                        {{value | date : 'dd/MM/yyyy'}}
+                    </ng-template>
+                </ngx-datatable-column>
+
+
+                <ngx-datatable-column [width]="20" name="" sortable="false" prop="objectId">
+                    <ng-template let-row="row" let-value="value" ngx-datatable-cell-template>
+                        <a href="javascript:void(0)" (click)="editStation(value)">
+                            <i class="fa fa-pencil-square-o"></i>
+                        </a>
+                        <a href="javascript:void(0)" (click)="viewDevices(value)">
+                            <i class="fa fa-files-o"></i>
+                        </a>
+                    </ng-template>
+                </ngx-datatable-column>
+            </ngx-datatable>
+        </div>
+    </div>
+    <div class="row" *ngIf="stationFormMode == true">
+        <div class="col-md-12">
+            <form [formGroup]="stationForm" (ngSubmit)="onSubmitStationFileForm(stationForm)" [ngClass]="{'was-validated': stationForm.invalid}">
+                <div class="form-group row" [ngClass]="{
+                                'is-invalid': stationName.invalid && (stationName.dirty || stationName.touched),
+                                'is-valid': stationName.valid && (stationName.dirty || stationName.touched)}">
+                    <label class="col-2 col-form-label">name:</label>
+                    <div class="col-10">
+                        <input type="text" class="form-control" formControlName="stationName" required>
+                        <div class="invalid-feedback" *ngIf="stationName.errors && (stationName.dirty || stationName.touched)">
+                            <p *ngIf="stationName.errors.required">First Name field is required</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <label class="col-2 col-form-label">CampaignID:</label>
+                    <div class="col-10">
+                        <input type="text" class="form-control" formControlName="campaignID">
+
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <label class="col-2 col-form-label">Min Brightness</label>
+                    <div class="col-10">
+                        <input type="text" class="form-control" formControlName="minBrightness" value="40">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label class="col-2 col-form-label">Max Brightness</label>
+                    <div class="col-10">
+                        <input type="text" class="form-control" formControlName="maxBrightness" value="80">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label class="col-2 col-form-label">Min Volume</label>
+                    <div class="col-10">
+                        <input type="text" class="form-control" formControlName="minVolume" value="20">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label class="col-2 col-form-label">VolThresholdTime:</label>
+                    <div class="col-10">
+                        <input type="text" class="form-control" formControlName="volThresholdTime" value="10">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <div class="offset-md-2 col-10">
+                        <dual-list [sort]="keepSorted" [source]="source" [key]="key" [display]="display" [filter]="filter" [(destination)]="confirmed"
+                            height="265px" [format]="format" [disabled]="disabled"></dual-list>
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <div class="offset-md-2 col-10">
+                        <button class="btn btn-primary" type="submit">Save</button>
+                        <button class="btn btn-default" type="button" (click)="cancel()">Cancel</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

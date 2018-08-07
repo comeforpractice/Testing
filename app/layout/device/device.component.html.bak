@@ -1,0 +1,169 @@
+<div [@routerTransition]>
+    <app-page-header [heading]="'Device'" [icon]="'fa fa-picture-o'"></app-page-header>
+
+    <div class="row" *ngIf="deviceFormMode == false">
+        <div class="col-md-12">
+            <div class="pull-right">
+                <button class="btn btn-primary" type="button" (click)="remove()">
+                    <i class="fa fa-trash"></i>
+                </button>
+                <button class="btn btn-secondary" type="button" (click)="fetch()">
+                    <i class="fa fa-refresh" aria-hidden="true"></i>
+                </button>
+                <button class="btn btn-secondary" type="button" (click)="deviceFormMode = true">
+                    <i class="fa fa-plus-square" aria-hidden="true"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="row" *ngIf="deviceFormMode == false">
+        <div class="col-md-12">
+            <hr>
+            <ngx-datatable class="bootstrap" [rows]="rows" [columnMode]="'force'" [headerHeight]="50" [footerHeight]="50" [rowHeight]="'auto'"
+                [limit]="5" [selected]="selected" [selectionType]="'checkbox'" [selectAllRowsOnPage]="false" [displayCheck]="displayCheck"
+                (activate)="onActivate($event)" (select)='onSelect($event)'>
+                <ngx-datatable-column [width]="30" [sortable]="false" [canAutoResize]="false" [draggable]="false" [resizeable]="false" [headerCheckboxable]="true"
+                    [checkboxable]="true">
+                </ngx-datatable-column>
+                <ngx-datatable-column name="Serial No." prop="serialNo"></ngx-datatable-column>
+                <ngx-datatable-column name="Campaign ID" prop="campaignID"></ngx-datatable-column>
+                <ngx-datatable-column name="Installed Date" prop="installedDate"></ngx-datatable-column>
+                <ngx-datatable-column name="Vehicle No" prop="vehicleNo"></ngx-datatable-column>
+                <ngx-datatable-column name="Email" prop="email"></ngx-datatable-column>
+                <ngx-datatable-column name="Phone" prop="phone"></ngx-datatable-column>
+                <ngx-datatable-column name="Station ID" prop="stationID"></ngx-datatable-column>
+                <ngx-datatable-column name="Accessories" prop="accessories"></ngx-datatable-column>
+                <ngx-datatable-column name="Driver Name" prop="driverName"></ngx-datatable-column>
+            </ngx-datatable>
+        </div>
+    </div>
+    <div class="row" *ngIf="deviceFormMode == true">
+        <div class="col-md-12">
+            <form [formGroup]="validateForm" (ngSubmit)="onSubmitCampFileForm(validateForm)" [ngClass]="{'was-validated': validateForm.invalid}">
+                <div class="form-group row" [ngClass]="{
+                                'is-invalid': serialNo.invalid && (serialNo.dirty || serialNo.touched),
+                                'is-valid': serialNo.valid && (serialNo.dirty || serialNo.touched)}">
+                    <label class="col-2 col-form-label">Serial:</label>
+                    <div class="col-10">
+                        <input type="text" class="form-control" formControlName="serialNo" required>
+                        <div class="invalid-feedback" *ngIf="serialNo.errors && (serialNo.dirty || serialNo.touched)">
+                            <p *ngIf="serialNo.errors.required">First Name field is required</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group row" [ngClass]="{
+                                'is-invalid': campaignId.invalid && (campaignId.dirty || campaignId.touched),
+                                'is-valid': campaignId.valid && (campaignId.dirty || campaignId.touched)
+                              }">
+                    <label class="col-2 col-form-label">campaignId:</label>
+                    <div class="col-10">
+                        <input type="text" class="form-control" formControlName="campaignId" required>
+                        <div class="invalid-feedback" *ngIf="campaignId.errors && (campaignId.dirty || campaignId.touched)">
+                            <p *ngIf="campaignId.errors.required">First Name field is required</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group row" [ngClass]="{
+                                'is-invalid': vehicleNo.invalid && (vehicleNo.dirty || vehicleNo.touched),
+                                'is-valid': vehicleNo.valid && (vehicleNo.dirty || vehicleNo.touched)
+                              }">
+                    <label class="col-2 col-form-label">vehicleNo:</label>
+                    <div class="col-10">
+                        <input type="text" class="form-control" formControlName="vehicleNo" required>
+                        <div class="invalid-feedback" *ngIf="vehicleNo.errors && (vehicleNo.dirty || vehicleNo.touched)">
+                            <p *ngIf="vehicleNo.errors.required">First Name field is required</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group row" [ngClass]="{
+                                'is-invalid': email.invalid && (email.dirty || email.touched),
+                                'is-valid': email.valid && (email.dirty || email.touched)
+                              }">
+                    <label class="col-2 col-form-label">email :</label>
+                    <div class="col-10">
+                        <input type="text" class="form-control" formControlName="email" required>
+                        <div class="invalid-feedback" *ngIf="email.errors && (email.dirty || email.touched)">
+                            <p *ngIf="email.errors.required">First Name field is required</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group row" [ngClass]="{
+                                'is-invalid': phone.invalid && (phone.dirty || phone.touched),
+                                'is-valid': phone.valid && (phone.dirty || phone.touched) }">
+                    <label class="col-2 col-form-label">phone:</label>
+                    <div class="col-10">
+                        <input type="text" class="form-control" formControlName="phone" required>
+                        <div class="invalid-feedback" *ngIf="phone.errors && (phone.dirty || phone.touched)">
+                            <p *ngIf="phone.errors.required">First Name field is required</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group row" [ngClass]="{
+                                'is-invalid': stationID.invalid && (stationID.dirty || stationID.touched),
+                                'is-valid': stationID.valid && (stationID.dirty || stationID.touched) }">
+                    <label class="col-2 col-form-label">stationID :</label>
+                    <div class="col-10">
+                        <input type="text" class="form-control" formControlName="stationID" required>
+                        <div class="invalid-feedback" *ngIf="stationID.errors && (stationID.dirty || stationID.touched)">
+                            <p *ngIf="stationID.errors.required">First Name field is required</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group row" [ngClass]="{
+                                'is-invalid': accessories.invalid && (accessories.dirty || accessories.touched),
+                                'is-valid': accessories.valid && (accessories.dirty || accessories.touched)}">
+                    <label class="col-2 col-form-label">accessories:</label>
+                    <div class="col-10">
+                        <input type="text" class="form-control" formControlName="accessories" required>
+                        <div class="invalid-feedback" *ngIf="accessories.errors && (accessories.dirty || accessories.touched)">
+                            <p *ngIf="accessories.errors.required">First Name field is required</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group row" [ngClass]="{
+                    'is-invalid': driverName.invalid && (driverName.dirty || driverName.touched),
+                    'is-valid': driverName.valid && (driverName.dirty || driverName.touched)}">
+                    <label class="col-2 col-form-label">driverName:</label>
+                    <div class="col-10">
+                        <input type="text" class="form-control" formControlName="driverName" required>
+                        <div class="invalid-feedback" *ngIf="driverName.errors && (driverName.dirty || driverName.touched)">
+                            <p *ngIf="driverName.errors.required">First Name field is required</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group row" [ngClass]="{
+                                'is-invalid': repairedDate.invalid && (repairedDate.dirty || repairedDate.touched),
+                                'is-valid': repairedDate.valid && (repairedDate.dirty || repairedDate.touched)}">
+                    <label class="col-2 col-form-label">repairedDate :</label>
+                    <div class="col-10">
+                        <input type="Date" class="form-control" formControlName="repairedDate" required>
+                        <div class="invalid-feedback" *ngIf="repairedDate.errors && (repairedDate.dirty || repairedDate.touched)">
+                            <p *ngIf="repairedDate.errors.required">First Name field is required</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group row" [ngClass]="{
+                                'is-invalid': replacedDate.invalid && (replacedDate.dirty || replacedDate.touched),
+                                'is-valid': replacedDate.valid && (replacedDate.dirty || replacedDate.touched)}">
+                    <label class="col-2 col-form-label">replacedDate :</label>
+                    <div class="col-10">
+                        <input type="Date" class="form-control" formControlName="replacedDate" required>
+                        <div class="invalid-feedback" *ngIf="repairedDate.errors && (replacedDate.dirty || replacedDate.touched)">
+                            <p *ngIf="replacedDate.errors.required">First Name field is required</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <div class="offset-md-2 col-10">
+                        <button class="btn btn-primary" type="submit">Save</button>
+                        <button class="btn btn-default" type="button" (click)="cancel()">Cancel</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

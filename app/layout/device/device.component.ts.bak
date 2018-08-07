@@ -1,0 +1,179 @@
+import { Component, OnInit } from '@angular/core';
+import { routerTransition } from '../../router.animations';
+import { ActivatedRoute, Router } from '@angular/router';
+import { NgbModal, ModalDismissReasons } from '@ng-bootstrap/ng-bootstrap';
+import {
+    ReactiveFormsModule,
+    FormsModule, FormBuilder, Validators, FormGroup, FormControl, AbstractControl
+} from '@angular/forms';
+import { DomSanitizer, SafeResourceUrl, BrowserModule } from '@angular/platform-browser';
+import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
+
+import {
+    Ng4FilesService,
+    Ng4FilesConfig,
+    Ng4FilesStatus,
+    Ng4FilesSelected
+} from '../../shared/modules';
+
+import { DeviceService } from '../../shared/services/index';
+import { configuration, uriConfig, httpOptions, httpOptionsImage } from '../../shared/config/config';
+import { ParseService } from '../../shared/services/parse.service';
+import { Device } from '../../shared/models/index';
+
+
+@Component({
+    selector: 'app-device',
+    templateUrl: './device.component.html',
+    styleUrls: ['./device.component.scss'],
+    animations: [routerTransition()]
+})
+export class DeviceComponent implements OnInit {
+
+ 
+	validateForm: FormGroup;
+    rows = [];
+    selected = [];
+	deviceFormMode: any = false;
+	        
+    serialNo:  FormControl;
+    campaignId: FormControl;
+    installedDate:FormControl;
+    vehicleNo: FormControl;
+    email: FormControl;
+    phone: FormControl;
+    stationID: FormControl;
+    accessories: FormControl;
+    driverName: FormControl;
+    repairedDate: FormControl;
+    replacedDate: FormControl;
+    
+
+    constructor(private deviceService: DeviceService,
+	    private modalService: NgbModal,
+		private fb: FormBuilder,
+		private route: ActivatedRoute,
+        public sanitizer: DomSanitizer,
+        private ng4FilesService: Ng4FilesService,
+        private parseServer: ParseService) {
+		this.fetch();
+		this.deviceFormMode=false;
+		}
+    ngOnInit() {
+		this.deviceFormMode=false;
+		this.createFormControls();
+        this.createForm();
+        this.fetch();
+    }
+
+    fetch() {
+        this.deviceService.getAll().subscribe(data => {
+            this.rows = data;
+            console.log(data);
+			this.deviceFormMode=false;
+        }, error => {
+            this.selected = [];
+            this.rows = [];
+            console.log(error);
+			this.deviceFormMode=false;
+        });
+    }
+
+    onSelect({ selected }) {
+        console.log('Select Event', selected, this.selected);
+
+        this.selected.splice(0, this.selected.length);
+        this.selected.push(...selected);
+    }
+
+    onActivate(event) {
+        console.log('Activate Event', event);
+    }
+
+    add() {
+        this.deviceFormMode=false;
+        this.selected.push(this.rows[1], this.rows[3]);
+    }
+
+    update() {
+        this.selected = [this.rows[1], this.rows[3]];
+    }
+
+    remove() {
+        this.selected = [];
+    }
+
+    displayCheck(row) {
+        return true;
+    }
+	 createFormControls() {
+        this.serialNo = new FormControl('', Validators.required);
+        this.campaignId = new FormControl('', Validators.required);
+        this.email = new FormControl('', Validators.required);
+        this.phone = new FormControl('', Validators.required);
+        this.stationID = new FormControl('', Validators.required);
+        this.accessories = new FormControl('',null);
+        this.vehicleNo = new FormControl('',null);
+        this.driverName = new FormControl('', Validators.required);
+        this.repairedDate = new FormControl('', Validators.required);
+        this.replacedDate = new FormControl('', Validators.required);      
+        this.installedDate = new FormControl('', Validators.required); 
+   
+    }
+	createForm() {
+        this.validateForm = new FormGroup({
+            serialNo: this.serialNo,
+            campaignId: this.campaignId,
+            vehicleNo:this.vehicleNo,
+            email: this.email,
+            phone: this.phone,
+            stationID: this.stationID,
+			accessories: this.accessories,
+            driverName: this.driverName,
+            repairedDate: this.repairedDate,
+            replacedDate: this.replacedDate
+        
+        });
+    }
+	 addOrModifyDeviceFile() {
+        this.validateForm = this.fb.group({});
+        this.createFormControls();
+        this.createForm();
+        this.deviceFormMode = true;
+    }
+    onSubmitCampFileForm(newDeviceForm) {
+        console.log(newDeviceForm.valid);
+        if(newDeviceForm.valid){
+            let device = new Device();
+            console.log(device);
+            device.accessories= this.accessories.value;
+            console.log(device);
+            device.campaignID= this.campaignId.value;
+            console.log(device);
+         //   device.installedDate= new Date();
+            device.vehicleNo= this.vehicleNo.value;
+            device.email= this.email.value;
+            device.phone= this.phone.value;
+            device.stationID= this.stationID.value;
+            device.driverName= this.driverName.value;
+          //  device.repairedDate= this.repairedDate.value;
+        //    device.replacedDate= this.replacedDate.value;
+        //    device.updatedAt= new Date();
+            console.log(device);
+            setTimeout(() => {
+                this.deviceService.create(device).subscribe(data => {
+                    console.log(data);
+                    this.fetch();
+                }, error => {
+                    console.log(error);
+                    this.fetch();
+                });
+            }, 3000);
+        } else {
+            console.log('Not valid form');
+        }
+       
+    }
+
+    
+}

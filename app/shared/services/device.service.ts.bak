@@ -1,0 +1,48 @@
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Observable } from 'rxjs/Rx';
+
+import { Device } from '../models/index';
+
+import { configuration, uriConfig, httpOptions } from '../config/config';
+
+
+@Injectable()
+export class DeviceService {
+
+    constructor(private http: HttpClient) {   }
+
+    getAll(): Observable<Device[]> {
+        return this.http.get<any>(uriConfig.DEVICE, { headers: httpOptions.headers })
+            .map(res => {
+                console.log(res);
+                return res.results;
+            });
+    }
+
+    getById(id: string) {
+        return this.http.get(uriConfig.DEVICE + '/' + id, { headers: httpOptions.headers });
+    }
+
+    getByCampaignId(stationId: string): Observable<Device[]> {
+        return this.http.get<any>(uriConfig.DEVICE +
+            '?where={"$relatedTo":{"object":{"__type":"Pointer","className":"Station","objectId":"'
+            + stationId + '"},"key":"deviceStation"}}',
+            { headers: httpOptions.headers })
+            .map(res => {
+                return res.results;
+            });
+    }
+
+    create(campaign: Device) {
+        return this.http.post(uriConfig.DEVICE, campaign, { headers: httpOptions.headers });
+    }
+
+    update(campaign: Device) {
+        return this.http.put(uriConfig.DEVICE + '/' + campaign.objectId, campaign, { headers: httpOptions.headers });
+    }
+
+    delete(id: string) {
+        return this.http.delete(uriConfig.DEVICE + '/' + id, { headers: httpOptions.headers });
+    }
+}

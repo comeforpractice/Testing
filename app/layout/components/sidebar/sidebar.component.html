@@ -1,0 +1,19 @@
+<nav class="sidebar" [ngClass]="{sidebarPushRight: isActive}">
+    <ul class="list-group">        
+        <a [routerLink]="['/campaign']" [routerLinkActive]="['router-link-active']" class="list-group-item">
+            <i class="fa fa-fw fa-list"></i>&nbsp;{{ 'Campaign' | translate }}
+        </a>
+       <!-- <a [routerLink]="['/campaignBtn']" [routerLinkActive]="['router-link-active']" class="list-group-item">
+            <i class="fa fa-plus-square-o"></i>&nbsp;{{ 'Campaign Button' | translate }}
+        </a> -->
+        <a [routerLink]="['/campaignFile/nocampaign']" [routerLinkActive]="['router-link-active']" class="list-group-item">
+            <i class="fa fa-picture-o"></i>&nbsp;{{ 'Campaign File' | translate }}
+        </a>
+        <a [routerLink]="['/device']" [routerLinkActive]="['router-link-active']" class="list-group-item">
+            <i class="fa fa-taxi"></i>&nbsp;{{ 'Device' | translate }}
+        </a>
+        <a [routerLink]="['/station']" [routerLinkActive]="['router-link-active']" class="list-group-item">
+            <i class="fa fa-fw fa-table"></i>&nbsp;{{ 'Station' | translate }}
+        </a>        
+    </ul>
+</nav>

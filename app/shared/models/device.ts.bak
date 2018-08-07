@@ -1,0 +1,16 @@
+export class Device {
+    objectId: string;
+    serialNo: string;
+    createdAt: Date;
+    updatedAt: Date;
+    campaignID: string;
+    installedDate: Date;
+    vehicleNo: string;
+    email: string;
+    phone: string;
+    stationID: string;
+    accessories: string;
+    driverName: string;
+    repairedDate: Date;
+    replacedDate: Date;
+}

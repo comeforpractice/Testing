@@ -1,0 +1,114 @@
+@import '../styles/bootstrap/bootstrap.scss';
+@import '../styles/bootstrap/bootstrap-reboot.scss';
+@import '../styles/bootstrap/bootstrap-grid.scss';
+
+@import '../../node_modules/@swimlane/ngx-datatable/release/index.css';
+@import '../../node_modules/@swimlane/ngx-datatable/release/themes/material.css';
+@import '../../node_modules/@swimlane/ngx-datatable/release/themes/bootstrap.css';
+@import '../../node_modules/@swimlane/ngx-datatable/release/assets/icons.css';
+
+.ngx-datatable .datatable-header {
+    display: block;
+    overflow: hidden;
+    background-color: #424242;
+    color: #ededed;
+}
+
+.ngx-datatable.bootstrap .datatable-footer {
+    background: #918d8d;
+    color: #ededed;
+    margin-top: -1px;
+}
+
+.ngx-datatable.bootstrap .datatable-body .datatable-body-row.active {
+    background-color: #dedcde;
+    color: #FFF;
+}
+
+.modal-xxl .modal-lg {
+    max-width: 70%;
+}
+
+$text: #74809D;
+$text-light: #C0C4C7;
+$border: #D2D6DA;
+
+.drop-container {
+    background: $white;
+    border-radius: 6px;
+    height: 100px;
+    box-shadow: 1px 2px 20px rgba($black, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px dashed $text-light;
+
+    div {
+      font-size: 16px;
+      font-weight: 400;
+      color: $text-light;
+
+        .upload-button {
+            display: inline-block;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            color: $purple;
+        
+            input {
+                display: none;
+            }
+        }
+    
+        .upload-items {
+            display: block;
+
+            .upload-item {
+                display: block;
+                margin-top: 20px;        
+
+                .filename {
+                    display: block;
+                    padding: 0 0 5px 5px;
+                    color: $text;
+                }
+                .progress {
+                    display: block;
+                    position: relative;
+                    height: 15px;
+                    border: 1px solid $purple;
+                    border-radius: 2px;
+                
+                    .bar {
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        height: 15px;
+                        background: $purple;
+                    }
+                }
+            }
+        }
+    }
+}
+
+.filename {
+    display: inherit;
+    align-items: center;
+    justify-content: center;
+    color: $text;
+}
+.text-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.has-danger {
+    color: red;
+    border: red;
+}
+
+.popover{
+    max-width: 100%; // Max Width of the popover (depending on the container!)
+}

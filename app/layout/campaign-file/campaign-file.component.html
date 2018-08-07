@@ -1,0 +1,265 @@
+<div [@routerTransition]>
+    <app-page-header [heading]="'Campaign File'" [icon]="'fa fa-picture-o'"></app-page-header>
+
+    <div class="row" *ngIf="campFileFormMode == false">
+        <div class="col-md-8">
+            <form class="form-inline my-2 my-lg-0" role="form" [formGroup]="campForm" (ngSubmit)="onSubmitCampaign(campForm.value)" [class.error]="!campForm.valid && campForm.touched">
+                <div class="mr-sm-2" [ngClass]="{
+                        'is-invalid': campaignIdCtrl.invalid && (campaignIdCtrl.dirty || campaignIdCtrl.touched),
+                        'is-valid': campaignIdCtrl.valid && (campaignIdCtrl.dirty || campaignIdCtrl.touched)
+                        }">
+                    <input type="text" class="form-control" id="campaignId" placeholder="Campaign Id" name="campaignId" [formControl]="campaignIdCtrl"
+                    />
+                    <span class="invalid-feedback" *ngIf="campaignIdCtrl.errors && (campaignIdCtrl.dirty || campaignIdCtrl.touched)">
+                        <span class="is-invalid" *ngIf="campaignIdCtrl.errors.required">Campaign Id is required</span>
+                    </span>
+                </div>
+                <button class="btn btn-secondary my-2 my-sm-0 pull-right" type="submit"> Search </button>
+            </form>
+        </div>
+        <div class="col-md-4">
+            <div class="pull-right">
+                <button class="btn btn-primary" type="button" (click)="remove()">
+                    <i class="fa fa-trash"></i>
+                </button>
+                <button class="btn btn-secondary" type="button" (click)="fetch()">
+                    <i class="fa fa-refresh" aria-hidden="true"></i>
+                </button>
+                <button class="btn btn-secondary" type="button" (click)="addOrModifyCampFile()">
+                    <i class="fa fa-plus-square" aria-hidden="true"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="row" *ngIf="campFileFormMode == false">
+        <div class="col-md-12">
+            <hr>
+            <ngx-datatable class="bootstrap" [rows]="rows" [columnMode]="'force'" [headerHeight]="50" [footerHeight]="50" [rowHeight]="'auto'"
+                [limit]="10" [selected]="selected" [selectionType]="'checkbox'" [selectAllRowsOnPage]="false" [displayCheck]="displayCheck"
+                (select)='onSelect($event)'>
+                <ngx-datatable-column [width]="30" [sortable]="false" [canAutoResize]="false" [draggable]="false" [resizeable]="false" [headerCheckboxable]="true"
+                    [checkboxable]="true">
+                </ngx-datatable-column>
+                <ngx-datatable-column name="File Name" sortable="false" prop="fileName">
+                    <ng-template let-row="row" let-value="value" ngx-datatable-cell-template>
+                        <a href="javascript:void(0)" (click)="previewImg(content,row)">{{value}}</a>
+                    </ng-template>
+                </ngx-datatable-column>
+                <ngx-datatable-column name="File Type" prop="fileTypeDisplay"></ngx-datatable-column>
+                <ngx-datatable-column name="Priority" prop="priority"></ngx-datatable-column>
+                <ngx-datatable-column name="Visible Area" prop="visibleAreaDisplay"></ngx-datatable-column>
+                <ngx-datatable-column name="Visible Time" prop="visibilityTime"></ngx-datatable-column>
+                <ngx-datatable-column [width]="30" name="" sortable="false" prop="objectId">
+                    <ng-template let-row="row" let-value="value" ngx-datatable-cell-template>
+                        <a href="javascript:void(0)" (click)="editCampaignFile(value)">
+                            <i class="fa fa-pencil-square-o"></i>
+                        </a>
+                    </ng-template>
+                </ngx-datatable-column>
+            </ngx-datatable>
+        </div>
+    </div>
+
+    <div class="row" *ngIf="campFileFormMode == true">
+        <div class="col-md-12">
+            <form [formGroup]="campFileForm" (ngSubmit)="onSubmitCampFileForm(campFileForm)">
+                <div class="form-group row" [ngClass]="{
+                                'is-invalid': fileName.invalid && (fileName.dirty || fileName.touched),
+                                'is-valid': fileName.valid && (fileName.dirty || fileName.touched)
+                              }">
+                    <label class="col-2 col-form-label">File Name:</label>
+                    <div class="col-10">
+                        <input type="text" class="form-control" formControlName="fileName" required>
+                        <div class="invalid-feedback" *ngIf="fileName.errors && (fileName.dirty || fileName.touched)">
+                            <p *ngIf="fileName.errors.required">First Name field is required</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group row" [ngClass]="{
+                    'is-invalid': visibilityTime.invalid && (visibilityTime.dirty || visibilityTime.touched),
+                    'is-valid': visibilityTime.valid && (visibilityTime.dirty || visibilityTime.touched)
+                  }">
+                    <label class="col-2 col-form-label">Visibility Time:</label>
+                    <div class="col-10">
+                        <input type="text" class="form-control" formControlName="visibilityTime" >
+                        <div class="invalid-feedback" *ngIf="visibilityTime.errors && (visibilityTime.dirty || visibilityTime.touched)">
+                            <p *ngIf="visibilityTime.errors.required">visibilityTime is required</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <label class="col-2 col-form-label">Visible Area:</label>
+                    <div class="col-10">
+                        <select class="custom-select" class="form-control" formControlName="visibleAreaDisplay"  (change)="check($event.target.value);">
+                            <option value="TOP">TOP</option>
+                            <option value="SIDE">SIDE</option>
+                            <option value="BUTTON">BUTTON</option>
+                        </select>
+                        <div class="invalid-feedback" *ngIf="visibleAreaDisplay.errors && (visibleAreaDisplay.dirty || visibleAreaDisplay.touched)">
+                            <p *ngIf="visibleAreaDisplay.errors.required">Visible Area field is required</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <label class="col-2 col-form-label">File Type:</label>
+                    <div class="col-10">
+                        <select class="custom-select" class="form-control" formControlName="fileType"  >
+                            <option value="1">Video</option>
+                            <option value="2">Image</option>
+                        </select>
+                        
+                    </div>
+                </div>
+
+                <!--div class="form-group row" *ngIf="moreFile == true"-->
+                <div class="form-group row" >
+                    <label class="col-2 col-form-label">Priority:</label>
+                    <div class="col-10">
+                            
+                            <input type="text" class="form-control" formControlName="priority" >
+                        
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label class="col-2 col-form-label">Start Date:</label>
+                    <div class="col-10">
+                        <input type="Date" placeholder="yyyy-mm-dd" class="form-control" formControlName="startDate" >
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label class="col-2 col-form-label">End Date:</label>
+                    <div class="col-10">
+                        <input type="Date" placeholder="yyyy-mm-dd" class="form-control" formControlName="endDate" >
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label class="col-2 col-form-label">Image/Video:</label>
+
+                    <div class="col-10">
+                        <div *ngIf="eidtCampFileFormMode">
+                            <a href="javascript:void(0)" (click)="previewImg(content, campaignFile)">{{campaignFile.filePath.name}}</a>
+                            <a href="javascript:void(0" (click)="deleteFile()">
+                                <i class="fa fa-trash" aria-hidden="true"></i>
+                            </a>
+                        </div>
+                        <div *ngIf="!eidtCampFileFormMode">
+                            <ng4-files-drop (filesSelect)="filesSelect($event)" [configId]="'another-config'">
+                                <div class="drop-container">
+                                    <div class="row">
+                                        <div class="col-12">
+                                            Drag a file here or
+                                            <ng4-files-click (filesSelect)="filesSelect($event)" [configId]="'another-config'">
+                                                <span class="upload-button">browse</span>
+                                            </ng4-files-click>
+                                            to upload.
+                                        </div>
+                                        <div class="col-12">
+                                            <div class="upload-item" *ngFor="let f of selectedFiles; let i = index;">
+                                                <span class="filename">
+                                                    <span>{{ f.name }}</span>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </ng4-files-drop>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group row"  *ngIf="moreFile == true">
+                    <label class="col-2 col-form-label">Image:</label>
+
+                    <div class=" col-10" >
+                        <div *ngIf="eidtCampFileFormMode">
+                            <a href="javascript:void(0)" (click)="previewImg(content, campaignFile)">{{campButton.sideBannerPath.name}}</a>
+                            <a href="javascript:void(0" (click)="deleteFile()">
+                                <i class="fa fa-trash" aria-hidden="true"></i>
+                            </a>
+                        </div>
+                        <div *ngIf="!eidtCampFileFormMode">
+                            <ng4-files-drop (filesSelect)="filesSelect($event)" [configId]="'another-config'">
+                                <div class="drop-container">
+                                    <div class="row">
+                                        <div class="col-12">
+                                            Drag a file here or
+                                            <ng4-files-click (filesSelect)="filesSelect1($event)" [configId]="'another-config'">
+                                                <span class="upload-button">browse</span>
+                                            </ng4-files-click>
+                                            to upload.
+                                        </div>
+                                        <div class="col-12">
+                                            <div class="upload-item" *ngFor="let f of selectedFiles1; let i = index;">
+                                                <span class="filename">
+                                                    <span>{{ f.name }}</span>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </ng4-files-drop>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group row"  *ngIf="moreFile == true">
+                    <label class="col-2 col-form-label">Video:</label>
+                    <div class="offset-md-2 col-10">
+                        <div *ngIf="eidtCampFileFormMode">
+                            <a href="javascript:void(0)" (click)="previewImg(content, campaignFile)">{{campButton.topBannerPath.name}}</a>
+                            <a href="javascript:void(0" (click)="deleteFile()">
+                                <i class="fa fa-trash" aria-hidden="true"></i>
+                            </a>
+                        </div>
+                        <div *ngIf="!eidtCampFileFormMode">
+                            <ng4-files-drop (filesSelect)="filesSelect2($event)" [configId]="'another-config'">
+                                <div class="drop-container">
+                                    <div class="row">
+                                        <div class="col-12">
+                                            Drag a file here or
+                                            <ng4-files-click (filesSelect)="filesSelect2($event)" [configId]="'another-config'">
+                                                <span class="upload-button">browse</span>
+                                            </ng4-files-click>
+                                            to upload.
+                                        </div>
+                                        <div class="col-12">
+                                            <div class="upload-item" *ngFor="let f of selectedFiles2; let i = index;">
+                                                <span class="filename">
+                                                    <span>{{ f.name }}</span>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </ng4-files-drop>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="form-group row">
+                    <div class="offset-md-2 col-10">
+                        <button class="btn btn-primary" type="submit">Save</button>
+                        <button class="btn btn-default" type="button" (click)="cancel()">Cancel</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <ng-template #content let-c="close" let-d="dismiss" class="modal-xlg">
+        <div class="modal-header">
+            <h4 class="modal-title">{{filePath.name}}</h4>
+            <button type="button" class="close" aria-label="Close" (click)="d('Cross click')">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <iframe width="100%" height="300" [src]="filePath.url|safe"></iframe>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" (click)="c('Close click')">Close</button>
+        </div>
+    </ng-template>
+</div>
